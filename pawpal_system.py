@@ -18,11 +18,11 @@ class Task:
 
     def mark_complete(self) -> None:
         """Mark this task as completed. Scheduler handles recurrence."""
-        pass
+        self.completed = True
 
     def is_urgent(self) -> bool:
         """Check if this task is urgent (high priority)."""
-        pass
+        return self.priority == "high"
 
 
 @dataclass
@@ -38,15 +38,15 @@ class Pet:
 
     def add_task(self, task: Task) -> None:
         """Add a task to this pet."""
-        pass
+        self.tasks.append(task)
 
     def remove_task(self, task_id: str) -> None:
         """Remove a task from this pet by ID."""
-        pass
+        self.tasks = [t for t in self.tasks if t.id != task_id]
 
     def get_tasks(self) -> List[Task]:
         """Get all tasks for this pet."""
-        pass
+        return self.tasks
 
 
 @dataclass
@@ -60,19 +60,22 @@ class Owner:
 
     def add_pet(self, pet: Pet) -> None:
         """Add a pet to this owner's profile."""
-        pass
+        self.pets.append(pet)
 
     def remove_pet(self, pet_id: str) -> None:
         """Remove a pet from this owner's profile by ID."""
-        pass
+        self.pets = [p for p in self.pets if p.id != pet_id]
 
     def get_pets(self) -> List[Pet]:
         """Get all pets owned by this owner."""
-        pass
+        return self.pets
 
     def get_all_tasks(self) -> List[Task]:
         """Get all tasks across all pets for this owner."""
-        pass
+        all_tasks = []
+        for pet in self.pets:
+            all_tasks.extend(pet.get_tasks())
+        return all_tasks
 
 
 @dataclass
@@ -82,24 +85,70 @@ class Scheduler:
 
     def load_tasks(self) -> List[Task]:
         """Load all tasks from the owner's pets."""
-        pass
+        return self.owner.get_all_tasks()
 
     def generate_daily_plan(self) -> List[Task]:
         """Generate an optimized daily schedule of tasks."""
-        pass
+        tasks = self.load_tasks()
+        sorted_tasks = self.sort_by_priority(tasks)
+        return sorted_tasks
 
     def sort_by_priority(self, tasks: List[Task]) -> List[Task]:
-        """Sort tasks by priority."""
-        pass
+        """Sort tasks by priority (high > medium > low), then by scheduled time."""
+        priority_order = {"high": 0, "medium": 1, "low": 2}
+        return sorted(tasks, key=lambda t: (priority_order.get(t.priority, 3), t.scheduled_time))
 
     def filter_by_available_time(self, tasks: List[Task]) -> List[Task]:
         """Filter tasks that fit within available hours."""
-        pass
+        total_duration = sum(t.duration_mins for t in tasks)
+        available_mins = self.owner.available_hours_per_day * 60
+
+        if total_duration <= available_mins:
+            return tasks
+
+        filtered = []
+        time_used = 0
+        for task in tasks:
+            if time_used + task.duration_mins <= available_mins:
+                filtered.append(task)
+                time_used += task.duration_mins
+        return filtered
 
     def detect_conflicts(self, tasks: List[Task]) -> List[str]:
         """Detect tasks scheduled at the same time and return warnings."""
-        pass
+        time_slots = {}
+        conflicts = []
+
+        for task in tasks:
+            if task.scheduled_time in time_slots:
+                conflicts.append(
+                    f"Conflict: '{task.name}' and '{time_slots[task.scheduled_time].name}' "
+                    f"both scheduled at {task.scheduled_time}"
+                )
+            else:
+                time_slots[task.scheduled_time] = task
+
+        return conflicts
 
     def mark_task_complete(self, task_id: str) -> None:
         """Mark a task complete and handle recurrence if needed."""
-        pass
+        tasks = self.load_tasks()
+        for pet in self.owner.get_pets():
+            for task in pet.get_tasks():
+                if task.id == task_id:
+                    task.mark_complete()
+
+                    # If recurring, create new instance for next occurrence
+                    if task.recurring in ["daily", "weekly"]:
+                        new_task = Task(
+                            id=f"{task.id}_next",
+                            name=task.name,
+                            duration_mins=task.duration_mins,
+                            priority=task.priority,
+                            pet_id=task.pet_id,
+                            scheduled_time=task.scheduled_time,
+                            recurring=task.recurring,
+                            completed=False
+                        )
+                        pet.add_task(new_task)
+                    return

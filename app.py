@@ -145,8 +145,19 @@ if st.session_state.owner is not None and st.session_state.owner.get_pets():
         if tasks:
             st.write(f"**{pet.name}**")
             for task in tasks:
-                status = "✓" if task.completed else "○"
-                st.caption(f"{status} {task.name} - {task.scheduled_time} ({task.duration_mins} min, {task.priority})")
+                col1, col2 = st.columns([4, 1])
+                with col1:
+                    status = "✓" if task.completed else "○"
+                    st.caption(f"{status} {task.name} - {task.scheduled_time} ({task.duration_mins} min, {task.priority})")
+                with col2:
+                    if not task.completed:
+                        if st.button(f"Done", key=f"complete_{task.id}"):
+                            scheduler = Scheduler(owner=st.session_state.owner)
+                            scheduler.mark_task_complete(task.id)
+                            st.success(f"✓ Marked '{task.name}' complete!")
+                            if task.recurring in ["daily", "weekly"]:
+                                st.info(f"📅 Next {task.recurring} task created!")
+                            st.rerun()
         else:
             st.caption(f"{pet.name}: No tasks yet")
 
