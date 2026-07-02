@@ -94,15 +94,32 @@ END OF DEMO
 
 ## 🧪 Testing PawPal+
 
-```bash
-# Run the full test suite:
-pytest
+Run the full test suite:
 
-# Run with coverage:
-pytest --cov
+```bash
+python3 -m pytest tests/test_pawpal.py -v
 ```
 
-Sample test output:
+### Test Coverage
+
+The test suite includes **12 tests** across 4 test classes:
+
+**Core Functionality:**
+- Task completion and urgency checking
+- Pet and Owner CRUD operations (add/remove)
+- Task collection across multiple pets
+
+**Algorithmic Correctness:**
+- Task sorting by priority + time
+- Task filtering by available hours
+- Conflict detection for same-time tasks
+
+**Edge Cases:**
+- Recurring task creation (daily task generates next instance)
+- Empty task list handling (no crashes on empty data)
+- Multiple conflicts (3+ tasks at same time)
+
+### Test Output
 
 ```
 =================================== test session starts ===================================
@@ -110,20 +127,29 @@ platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Develope
 cachedir: .pytest_cache
 rootdir: /Users/dina/Downloads/CODEPATH/ai110-module2show-pawpal-starter
 plugins: anyio-4.12.1
-collected 9 items
+collected 12 items
 
-tests/test_pawpal.py::TestTask::test_task_completion PASSED                         [ 11%]
-tests/test_pawpal.py::TestTask::test_task_is_urgent PASSED                          [ 22%]
-tests/test_pawpal.py::TestPet::test_add_task_to_pet PASSED                          [ 33%]
-tests/test_pawpal.py::TestPet::test_remove_task_from_pet PASSED                     [ 44%]
-tests/test_pawpal.py::TestOwner::test_add_pet_to_owner PASSED                       [ 55%]
-tests/test_pawpal.py::TestOwner::test_get_all_tasks_from_owner PASSED               [ 66%]
-tests/test_pawpal.py::TestScheduler::test_sort_by_priority PASSED                   [ 77%]
-tests/test_pawpal.py::TestScheduler::test_detect_conflicts PASSED                   [ 88%]
-tests/test_pawpal.py::TestScheduler::test_filter_by_available_time PASSED           [100%]
+tests/test_pawpal.py::TestTask::test_task_completion PASSED                         [  8%]
+tests/test_pawpal.py::TestTask::test_task_is_urgent PASSED                          [ 16%]
+tests/test_pawpal.py::TestPet::test_add_task_to_pet PASSED                          [ 25%]
+tests/test_pawpal.py::TestPet::test_remove_task_from_pet PASSED                     [ 33%]
+tests/test_pawpal.py::TestOwner::test_add_pet_to_owner PASSED                       [ 41%]
+tests/test_pawpal.py::TestOwner::test_get_all_tasks_from_owner PASSED               [ 50%]
+tests/test_pawpal.py::TestScheduler::test_sort_by_priority PASSED                   [ 58%]
+tests/test_pawpal.py::TestScheduler::test_detect_conflicts PASSED                   [ 66%]
+tests/test_pawpal.py::TestScheduler::test_filter_by_available_time PASSED           [ 75%]
+tests/test_pawpal.py::TestScheduler::test_recurring_task_creation PASSED            [ 83%]
+tests/test_pawpal.py::TestScheduler::test_empty_task_list_filtering PASSED          [ 91%]
+tests/test_pawpal.py::TestScheduler::test_multiple_conflicts PASSED                 [100%]
 
-==================================== 9 passed in 0.01s ====================================
+==================================== 12 passed in 0.02s ====================================
 ```
+
+### Confidence Level
+
+**★★★★★ (5/5 stars)**
+
+All 12 tests pass, including edge cases. System handles empty data, recurring tasks, multiple conflicts, and filtering correctly. Tests verify both happy paths and failure modes. Confidence in core system reliability is high.
 
 ## 📐 Smarter Scheduling
 

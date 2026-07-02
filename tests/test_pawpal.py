@@ -337,3 +337,112 @@ class TestScheduler:
         total_duration = sum(t.duration_mins for t in filtered)
         assert total_duration <= 60  # Should fit in 1 hour
         assert len(filtered) == 2  # First two tasks (30 + 20 = 50 min)
+
+    def test_recurring_task_creation(self):
+        """Verify that marking a daily task complete creates a new instance."""
+        owner = Owner(
+            id="owner_1",
+            name="Alex",
+            email="alex@email.com",
+            available_hours_per_day=4.0
+        )
+
+        pet = Pet(
+            id="pet_1",
+            name="Biscuit",
+            species="Dog",
+            breed="Golden Retriever",
+            age=3,
+            special_needs="None"
+        )
+
+        daily_task = Task(
+            id="task_1",
+            name="Morning Walk",
+            duration_mins=30,
+            priority="high",
+            pet_id="pet_1",
+            scheduled_time="08:00",
+            recurring="daily"
+        )
+
+        owner.add_pet(pet)
+        pet.add_task(daily_task)
+
+        assert len(pet.get_tasks()) == 1
+        assert pet.get_tasks()[0].completed is False
+
+        scheduler = Scheduler(owner=owner)
+        scheduler.mark_task_complete("task_1")
+
+        # Original task should be marked complete
+        assert pet.get_tasks()[0].completed is True
+
+        # New task should be created
+        assert len(pet.get_tasks()) == 2
+        assert pet.get_tasks()[1].name == "Morning Walk"
+        assert pet.get_tasks()[1].completed is False
+
+    def test_empty_task_list_filtering(self):
+        """Verify that filtering empty task list returns empty list gracefully."""
+        owner = Owner(
+            id="owner_1",
+            name="Alex",
+            email="alex@email.com",
+            available_hours_per_day=4.0
+        )
+
+        scheduler = Scheduler(owner=owner)
+        empty_tasks = []
+
+        filtered = scheduler.filter_by_available_time(empty_tasks)
+        sorted_tasks = scheduler.sort_by_priority(empty_tasks)
+        conflicts = scheduler.detect_conflicts(empty_tasks)
+
+        assert filtered == []
+        assert sorted_tasks == []
+        assert conflicts == []
+
+    def test_multiple_conflicts(self):
+        """Verify that detect_conflicts() catches all tasks at same time."""
+        owner = Owner(
+            id="owner_1",
+            name="Alex",
+            email="alex@email.com",
+            available_hours_per_day=4.0
+        )
+
+        # Three tasks at exact same time
+        task1 = Task(
+            id="task_1",
+            name="Dog Feeding",
+            duration_mins=10,
+            priority="high",
+            pet_id="pet_1",
+            scheduled_time="09:00",
+            recurring="daily"
+        )
+        task2 = Task(
+            id="task_2",
+            name="Cat Feeding",
+            duration_mins=5,
+            priority="high",
+            pet_id="pet_2",
+            scheduled_time="09:00",
+            recurring="daily"
+        )
+        task3 = Task(
+            id="task_3",
+            name="Bird Feeding",
+            duration_mins=5,
+            priority="high",
+            pet_id="pet_3",
+            scheduled_time="09:00",
+            recurring="daily"
+        )
+
+        scheduler = Scheduler(owner=owner)
+        conflicts = scheduler.detect_conflicts([task1, task2, task3])
+
+        # Should detect conflicts between task1-task2 and task1-task3, task2-task3
+        assert len(conflicts) >= 2  # At least 2 conflict warnings
