@@ -44,14 +44,52 @@ pip install -r requirements.txt
 
 ## 🖥️ Sample Output
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+Running `python main.py` generates a daily schedule for all pets, sorted by priority and time, filtered by available hours, and flags conflicts:
 
 ```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
+============================================================
+PAWPAL+ DAILY PLAN
+============================================================
+
+Owner: Alex Chen (alex.chen@email.com)
+Available Time: 4.0 hours/day
+Pets: Biscuit, Whiskers
+
+============================================================
+SORTED TASKS (by priority, then time)
+============================================================
+08:00 — Morning Walk (30 min, HIGH) [Biscuit] TODO
+09:00 — Dog Feeding (10 min, HIGH) [Biscuit] TODO
+09:00 — Cat Feeding (5 min, HIGH) [Whiskers] TODO
+14:00 — Afternoon Walk (30 min, MEDIUM) [Biscuit] TODO
+16:00 — Cat Playtime (20 min, MEDIUM) [Whiskers] TODO
+
+============================================================
+FILTERED PLAN (fits in available hours)
+============================================================
+08:00 — Morning Walk (30 min) [Biscuit]
+09:00 — Dog Feeding (10 min) [Biscuit]
+09:00 — Cat Feeding (5 min) [Whiskers]
+14:00 — Afternoon Walk (30 min) [Biscuit]
+16:00 — Cat Playtime (20 min) [Whiskers]
+
+Total Duration: 95 minutes (1.6 hours)
+Available: 240.0 minutes (4.0 hours)
+
+============================================================
+CONFLICT DETECTION
+============================================================
+⚠️  Conflict: 'Cat Feeding' and 'Dog Feeding' both scheduled at 09:00
+
+============================================================
+MARK TASK COMPLETE
+============================================================
+✓ Marked 'Morning Walk' as complete
+  Status: URGENT
+
+============================================================
+END OF DEMO
+============================================================
 ```
 
 ## 🧪 Testing PawPal+
