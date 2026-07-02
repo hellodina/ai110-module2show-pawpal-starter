@@ -105,28 +105,80 @@ pytest --cov
 Sample test output:
 
 ```
-# Paste your pytest output here
+=================================== test session starts ===================================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/dina/Downloads/CODEPATH/ai110-module2show-pawpal-starter
+plugins: anyio-4.12.1
+collected 9 items
+
+tests/test_pawpal.py::TestTask::test_task_completion PASSED                         [ 11%]
+tests/test_pawpal.py::TestTask::test_task_is_urgent PASSED                          [ 22%]
+tests/test_pawpal.py::TestPet::test_add_task_to_pet PASSED                          [ 33%]
+tests/test_pawpal.py::TestPet::test_remove_task_from_pet PASSED                     [ 44%]
+tests/test_pawpal.py::TestOwner::test_add_pet_to_owner PASSED                       [ 55%]
+tests/test_pawpal.py::TestOwner::test_get_all_tasks_from_owner PASSED               [ 66%]
+tests/test_pawpal.py::TestScheduler::test_sort_by_priority PASSED                   [ 77%]
+tests/test_pawpal.py::TestScheduler::test_detect_conflicts PASSED                   [ 88%]
+tests/test_pawpal.py::TestScheduler::test_filter_by_available_time PASSED           [100%]
+
+==================================== 9 passed in 0.01s ====================================
 ```
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
+PawPal+ includes intelligent task organization to help owners plan realistic daily schedules.
 
-| Feature | Method(s) | Notes |
+| Feature | Method(s) | How it works |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_by_priority()` | Orders tasks by priority level (high → medium → low), then by scheduled time. High-priority tasks like feeding appear first. |
+| Filtering | `Scheduler.filter_by_available_time()` | Keeps only tasks that fit within the owner's available hours per day. If owner has 4 hours and tasks total 6 hours, lowest-priority tasks are dropped. |
+| Conflict handling | `Scheduler.detect_conflicts()` | Identifies tasks scheduled at the exact same time (e.g., dog feeding and cat feeding both at 09:00) and flags them as warnings. |
+| Recurring tasks | `Scheduler.mark_task_complete()` | When a recurring task (daily/weekly) is marked complete, a new instance is automatically created for the next occurrence. One-time tasks are not repeated. |
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+Run the Streamlit app to see PawPal+ in action:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+```bash
+python3 -m streamlit run app.py
+```
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+### User Journey
+
+1. **Create Owner Profile** — Enter your name, email, and available hours per day (e.g., 4 hours). Click "Create Owner" to set up your profile. Your profile persists across all app interactions via `st.session_state`.
+
+2. **Add Pets** — For each pet, enter name, species, breed, age, and special needs. Click "Add Pet". The app stores pets in your Owner object and displays them in a list.
+
+3. **Schedule Tasks** — Select a pet and add care tasks with:
+   - Task name (e.g., "Morning Walk")
+   - Duration in minutes
+   - Priority (low/medium/high)
+   - Scheduled time (HH:MM format)
+   - Recurrence (once/daily/weekly)
+   
+   Tasks are added to the pet and displayed grouped by pet name.
+
+4. **Mark Tasks Complete** — Click the "Done" button next to any incomplete task. If the task is recurring (daily/weekly), a new instance is automatically created. Completed tasks are marked with a checkmark.
+
+5. **Generate Daily Schedule** — Click "Build Schedule" to see:
+   - **Sorted tasks** — High-priority tasks first, ordered by time
+   - **Filtered plan** — Only tasks that fit within your available hours
+   - **Conflict warnings** — Tasks scheduled at the same time are flagged
+   - **Time summary** — Total duration vs. available hours
+
+### Example Workflow
+
+- Owner: "Jordan" (4 hours available)
+- Pets: "Biscuit" (dog), "Whiskers" (cat)
+- Tasks:
+  - 08:00 Morning Walk (30 min, high, daily)
+  - 09:00 Dog Feeding (10 min, high, daily)
+  - 09:00 Cat Feeding (5 min, high, daily) ← **Conflict!**
+  - 14:00 Afternoon Walk (30 min, medium, daily)
+  - 16:00 Cat Playtime (20 min, medium, daily)
+
+When you click "Build Schedule":
+- All 5 tasks appear sorted by priority
+- All 5 fit in 4 hours (95 min total)
+- ⚠️ Warning: Dog Feeding and Cat Feeding both at 09:00
