@@ -115,7 +115,11 @@ class Scheduler:
         return filtered
 
     def detect_conflicts(self, tasks: List[Task]) -> List[str]:
-        """Detect tasks scheduled at the same time and return warnings."""
+        """Detect tasks scheduled at the same time and return warnings.
+
+        Note: Detects exact time matches only. Does not detect overlapping durations
+        (e.g., task A 09:00-09:30 and task B 09:15-09:45 would not be flagged).
+        """
         time_slots = {}
         conflicts = []
 
