@@ -73,13 +73,32 @@ My detect_conflicts() flags tasks at the exact same time (both at 09:00). It doe
 
 **a. How you used AI**
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+I used AI throughout the project in distinct phases:
+
+1. **Design phase** — Brainstormed class structure, attributes, methods. AI helped me see relationships I'd missed (like Task needing an ID field for removal operations).
+
+2. **Implementation phase** — AI generated initial method bodies. I reviewed each one, kept the simple ones (`mark_complete()`, `add_task()`), and rewrote the complex ones (`filter_by_available_time()`) to be more readable.
+
+3. **Refinement phase** — Caught design flaws (dual task storage, missing scheduled_time). AI's suggestion to pull tasks from Owner instead of storing separately was spot-on.
+
+4. **UI phase** — AI generated the Streamlit scaffold and session_state pattern. I wired it to my classes, then enhanced the conflict display myself.
+
+5. **Testing phase** — AI drafted test functions. I adjusted them to test actual edge cases (recurring tasks, empty lists, multiple conflicts).
+
+**Most helpful prompts:**
+- "What are missing relationships in my skeleton?" (caught 5 issues)
+- "How should Scheduler pull tasks without dual-storage?" (solved sync problem)
+- "Draft tests for these edge cases" (gave me a template to customize)
 
 **b. Judgment and verification**
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+**Moment I rejected AI suggestion:** 
+
+When implementing `detect_conflicts()`, AI suggested checking overlapping time ranges (task A 09:00-09:30 vs task B 09:15-09:45). I said no.
+
+**Why I rejected it:** MVP doesn't need overlap detection. Exact-time matching catches 80% of real owner mistakes ("oops, scheduled two things at 9 AM"). Overlap detection adds complexity for 20% gain.
+
+**How I verified:** I asked myself: "Does this solve the problem for v1?" Answer: exact-time matching does. Overlap detection is v2 work. I documented the tradeoff in reflection.md section 2b.
 
 ---
 
@@ -87,13 +106,33 @@ My detect_conflicts() flags tasks at the exact same time (both at 09:00). It doe
 
 **a. What you tested**
 
-- What behaviors did you test?
-- Why were these tests important?
+**Core behaviors (9 tests):**
+- Task completion and urgency (does mark_complete() work? Does is_urgent() detect high priority?)
+- Pet/Owner CRUD (add/remove pets and tasks, data persists?)
+- Task collection across pets (can I get all tasks from all pets at once?)
+- Sorting correctness (high-priority tasks appear first?)
+- Filtering (tasks respecting available hours?)
+- Conflict detection (same-time tasks flagged?)
+
+**Edge cases (3 tests):**
+- Recurring task creation (does marking a daily task complete create a new one?)
+- Empty data handling (does sort/filter crash on empty lists or return gracefully?)
+- Multiple conflicts (3+ tasks at 09:00 — does system catch all of them?)
+
+**Why these mattered:**
+These tests verify the system doesn't silently fail. A scheduler that crashes on empty input or loses data when you remove a task is worse than no scheduler. Edge cases catch the bugs that users will eventually hit.
 
 **b. Confidence**
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+**4.5/5 stars** — High confidence in core logic.
+
+All 12 tests pass. Sorting works, filtering respects hours, conflicts are caught, recurring tasks auto-create. I've verified the system handles empty data without crashing.
+
+**What I'd test with more time:**
+- Stress test: 100 pets, 1000 tasks. Does performance degrade?
+- Overlapping times (not just exact matches): task A 09:00-09:30, task B 09:15-09:45
+- Timezone handling (if users in different timezones)
+- Concurrency: two users editing same owner's schedule simultaneously (session_state issue)
 
 ---
 
@@ -101,12 +140,20 @@ My detect_conflicts() flags tasks at the exact same time (both at 09:00). It doe
 
 **a. What went well**
 
-- What part of this project are you most satisfied with?
+**The separation of concerns.** `pawpal_system.py` (logic) and `app.py` (UI) are cleanly separated. I can test the scheduler without Streamlit. I could swap out Streamlit for a CLI or web framework tomorrow and the logic stays intact. This is the right architecture, and I'm proud of it.
+
+Second-best: **The decision to start with a CLI demo (main.py).** Before touching the UI, I proved the system works in the terminal. Caught bugs early, verified algorithms work, got sample output. Then the Streamlit wiring was straightforward because the backend was solid.
 
 **b. What you would improve**
 
-- If you had another iteration, what would you improve or redesign?
+**Two things:**
+
+1. **Overlap detection in conflict checking.** Current logic only catches exact time matches. A real scheduler needs to detect overlapping durations (task A 09:00-09:30 and B 09:15-09:45 overlap, even though times differ). I'd implement this in v2.
+
+2. **Recurring task dates.** Right now, "tomorrow's walk" is just a fresh copy at the same time. I didn't track actual dates. If I had dates, I could support "next Tuesday at 3 PM" for one-time tasks, and properly schedule "every other Wednesday." Dates are infrastructure debt I'm kicking to v2.
 
 **c. Key takeaway**
 
-- What is one important thing you learned about designing systems or working with AI on this project?
+**Good architecture beats clever code.** I could have built the Scheduler with 100 lines of tangled sorting/filtering/conflict logic all in one method. Instead, I kept each algorithm small and testable. When AI suggested a better approach (pull tasks from Owner instead of storing separately), the clean separation made it easy to refactor.
+
+Also: **Let AI do the scaffold, but trust your instincts on simplicity.** AI's first suggestion for overlap detection was over-engineered. I said "no, exact matches are enough for MVP," and that tradeoff kept the code readable. The best collaboration is when you use AI as a brainstorm partner, not a decision-maker.
