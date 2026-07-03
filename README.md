@@ -22,6 +22,18 @@ Your final app should:
 - Display the plan clearly (and ideally explain the reasoning)
 - Include tests for the most important scheduling behaviors
 
+## ✨ Features
+
+**PawPal+** includes:
+
+- **Owner & Pet Management** — Create owner profiles with available hours per day; add multiple pets with details (species, breed, age, special needs)
+- **Task Scheduling** — Define care tasks with duration, priority level (high/medium/low), scheduled time, and recurrence (once/daily/weekly)
+- **Intelligent Planning** — Automatically sorts tasks by priority, filters tasks that fit available time, and detects scheduling conflicts
+- **Recurring Task Automation** — Mark daily or weekly tasks as complete; system automatically creates next occurrence
+- **Conflict Detection** — Identifies tasks scheduled at the same time and alerts user with helpful guidance
+- **CLI & Web UI** — Use the command-line demo (`main.py`) or interactive Streamlit app (`app.py`) to manage schedules
+- **Comprehensive Testing** — 12 automated tests covering core functionality, algorithms, and edge cases
+
 ## Getting started
 
 ### Setup
