@@ -191,22 +191,44 @@ if st.session_state.owner is not None and st.session_state.owner.get_pets():
                 st.metric("Time Needed", f"{total_duration / 60:.1f} hours")
 
             st.subheader("Daily Plan (Sorted by Priority)")
+
+            # Extract conflicting times for visual highlighting
+            conflicting_times = set()
+            for conflict in conflicts:
+                # Parse time from conflict message (e.g., "...at 09:00")
+                if "at " in conflict:
+                    time_str = conflict.split("at ")[-1].strip()
+                    conflicting_times.add(time_str)
+
+            # Display tasks with conflict highlighting
             for task in filtered_tasks:
                 pet = next(
                     (p for p in st.session_state.owner.get_pets() if p.id == task.pet_id),
                     None
                 )
                 pet_name = pet.name if pet else "Unknown"
-                st.write(
-                    f"**{task.scheduled_time}** — {task.name} "
-                    f"({task.duration_mins} min, {task.priority.upper()}) [{pet_name}]"
-                )
+
+                # Highlight conflicting times
+                if task.scheduled_time in conflicting_times:
+                    st.warning(
+                        f"⚠️ **{task.scheduled_time}** — {task.name} "
+                        f"({task.duration_mins} min, {task.priority.upper()}) [{pet_name}]"
+                    )
+                else:
+                    st.write(
+                        f"**{task.scheduled_time}** — {task.name} "
+                        f"({task.duration_mins} min, {task.priority.upper()}) [{pet_name}]"
+                    )
+
+            st.divider()
 
             if conflicts:
-                st.warning("⚠️ Scheduling Conflicts Detected:")
+                st.error("🚨 **Scheduling Conflicts Detected** 🚨")
+                st.write("The following tasks are scheduled at the same time:")
                 for conflict in conflicts:
-                    st.write(f"- {conflict}")
+                    st.error(f"⚠️ {conflict}")
+                st.info("💡 Tip: Adjust task times or split conflicting tasks across different time slots.")
             else:
-                st.success("✓ No scheduling conflicts!")
+                st.success("✓ No scheduling conflicts! Your plan is feasible.")
 else:
     st.info("Set up an owner and pets with tasks to generate a schedule.")
