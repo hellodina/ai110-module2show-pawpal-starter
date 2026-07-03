@@ -1,0 +1,56 @@
+classDiagram
+    class Owner {
+        -id: string
+        -name: string
+        -email: string
+        -available_hours_per_day: float
+        -pets: List~Pet~
+        +add_pet(pet: Pet): void
+        +remove_pet(pet_id: string): void
+        +get_pets(): List~Pet~
+        +get_all_tasks(): List~Task~
+    }
+
+    class Pet {
+        -id: string
+        -name: string
+        -species: string
+        -breed: string
+        -age: int
+        -special_needs: string
+        -tasks: List~Task~
+        +add_task(task: Task): void
+        +remove_task(task_id: string): void
+        +get_tasks(): List~Task~
+    }
+
+    class Task {
+        -id: string
+        -name: string
+        -duration_mins: int
+        -priority: string
+        -pet_id: string
+        -scheduled_time: string
+        -recurring: string
+        -completed: bool
+        +mark_complete(): void
+        +is_urgent(): bool
+    }
+
+    class Scheduler {
+        -owner: Owner
+        +load_tasks(): List~Task~
+        +generate_daily_plan(): List~Task~
+        +sort_by_priority(tasks: List~Task~): List~Task~
+        +filter_by_available_time(tasks: List~Task~): List~Task~
+        +detect_conflicts(tasks: List~Task~): List~string~
+        +mark_task_complete(task_id: string): void
+    }
+
+    Owner "1" --> "*" Pet : has
+    Pet "1" --> "*" Task : contains
+    Scheduler "1" --> "1" Owner : works_with
+    Scheduler "1" --> "*" Task : organizes
+
+    note for Task "scheduled_time format: HH:MM (e.g., 09:00)"
+    note for Scheduler "Sorts by priority, filters by available hours, detects conflicts at same time"
